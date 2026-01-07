@@ -11,16 +11,16 @@ describe("Sheet", () => {
         workbook.scopedDefinedName.and.returnValue("DEFINED NAME");
         workbook.activeSheet.and.returnValue("ACTIVE SHEET");
 
-        Range = jasmine.createSpy("Range");
-        Row = jasmine.createSpy("Row");
+        Range = jasmine.createSpy("Range").and.callFake(function() { Object.setPrototypeOf(this, Range.prototype); });
+        Row = jasmine.createSpy("Row").and.callFake(function() { Object.setPrototypeOf(this, Row.prototype); });
         Row.prototype.rowNumber = jasmine.createSpy().and.callFake(() => ++i);
         Row.prototype.find = jasmine.createSpy('find');
-        Column = jasmine.createSpy("Column");
-        Cell = jasmine.createSpy("Cell");
+        Column = jasmine.createSpy("Column").and.callFake(function() { Object.setPrototypeOf(this, Column.prototype); });
+        Cell = jasmine.createSpy("Cell").and.callFake(function() { Object.setPrototypeOf(this, Cell.prototype); });
         Cell.prototype.address = jasmine.createSpy("Cell.address").and.returnValue("ADDRESS");
         PageBreaks = jasmine.createSpy("PageBreaks", ["add", "remove", "list"]);
 
-        Relationships = jasmine.createSpy("Relationships");
+        Relationships = jasmine.createSpy("Relationships").and.callFake(function() { Object.setPrototypeOf(this, Relationships.prototype); });
         Relationships.prototype.findById = jasmine.createSpy("Relationships.findById").and.callFake(id => ({ attributes: { Target: `TARGET:${id}` } }));
         Relationships.prototype.add = jasmine.createSpy("Relationships.add").and.returnValue({ attributes: { Id: "ID" } });
 

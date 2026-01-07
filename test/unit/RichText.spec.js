@@ -1,6 +1,6 @@
 "use strict";
 
-const XlsxPoplate = require('../../lib/XlsxPopulate');
+const XlsxPopulate = require('../../lib/XlsxPopulate');
 const RichText = require('../../lib/RichText');
 const RichTextFragment = require('../../lib/RichTextFragment');
 
@@ -8,7 +8,7 @@ describe("RichText", () => {
     let cell, workbook, cell2, cell3;
 
     beforeEach(done => {
-        XlsxPoplate.fromBlankAsync()
+        XlsxPopulate.fromBlankAsync()
             .then(wb => {
                 workbook = wb;
                 cell = workbook.sheet(0).cell(1, 1);
@@ -19,7 +19,7 @@ describe("RichText", () => {
     });
 
     it('global export', () => {
-        expect(RichText === XlsxPoplate.RichText).toBe(true);
+        expect(RichText === XlsxPopulate.RichText).toBe(true);
     });
 
     describe("add/get", () => {
@@ -316,8 +316,8 @@ describe("RichText", () => {
         expect(rt.get(1)._valueNode.attributes['xml:space']).toBe('preserve');
     });
 
-    xit('it should save unsupported node', done => {
-        XlsxPoplate.fromFileAsync('./test/files/issue-230.xlsx')
+    it('it should save unsupported node', done => {
+        XlsxPopulate.fromFileAsync('./test/files/issue-230.xlsx')
             .then(wb => {
                 expect(wb.sheet(0).cell('A1').value()._remainingNodes.length).toBe(5);
                 done();

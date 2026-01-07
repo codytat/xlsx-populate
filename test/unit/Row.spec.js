@@ -10,6 +10,7 @@ describe("Row", () => {
         let i = 1;
         Cell = jasmine.createSpy("Cell").and.callFake(function () {
             this.id = i++;
+            Object.setPrototypeOf(this, Cell.prototype);
         });
         Cell.prototype.columnNumber = jasmine.createSpy("columnNumber").and.returnValue(2);
         Cell.prototype.toObject = jasmine.createSpy("toObject").and.callFake(function () {

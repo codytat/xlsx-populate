@@ -6,7 +6,7 @@ describe("StyleSheet", () => {
     let Style, StyleSheet, styleSheet, styleSheetNode;
 
     beforeEach(() => {
-        Style = jasmine.createSpy("_Style");
+        Style = jasmine.createSpy("_Style").and.callFake(function() { Object.setPrototypeOf(this, Style.prototype); });
         StyleSheet = proxyquire("../../lib/StyleSheet", {
             "./Style": Style,
             '@noCallThru': true

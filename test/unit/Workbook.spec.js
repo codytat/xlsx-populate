@@ -15,7 +15,7 @@ describe("Workbook", () => {
             }).then(() => val);
         };
 
-        JSZip = jasmine.createSpy("JSZip");
+        JSZip = jasmine.createSpy("JSZip").and.callFake(function() { Object.setPrototypeOf(this, JSZip.prototype); });
         JSZip.loadAsync = jasmine.createSpy("JSZip.loadAsync").and.returnValue(Promise.resolve(new JSZip()));
         JSZip.prototype.file = jasmine.createSpy("JSZip.file");
         JSZip.prototype.remove = jasmine.createSpy("JSZip.remove");
@@ -29,7 +29,7 @@ describe("Workbook", () => {
         fs.readFile.and.callFake((path, cb) => cb(null, "DATA"));
         fs.writeFile.and.callFake((path, data, cb) => cb(null));
 
-        StyleSheet = jasmine.createSpy("StyleSheet");
+        StyleSheet = jasmine.createSpy("StyleSheet").and.callFake(function() { Object.setPrototypeOf(this, StyleSheet.prototype); });
         StyleSheet.prototype.toString = () => "STYLE SHEET";
 
         Sheet = class {
@@ -50,20 +50,20 @@ describe("Workbook", () => {
         Sheet.prototype.hidden = jasmine.createSpy("Sheet.hidden").and.returnValue(false);
         Sheet.prototype.tabSelected = jasmine.createSpy("Sheet.tabSelected");
 
-        SharedStrings = jasmine.createSpy("SharedStrings");
+        SharedStrings = jasmine.createSpy("SharedStrings").and.callFake(function() { Object.setPrototypeOf(this, SharedStrings.prototype); });
         SharedStrings.prototype.toString = () => "SHARED STRINGS";
 
-        Relationships = jasmine.createSpy("Relationships");
+        Relationships = jasmine.createSpy("Relationships").and.callFake(function() { Object.setPrototypeOf(this, Relationships.prototype); });
         Relationships.prototype.toString = () => "RELATIONSHIPS";
         Relationships.prototype.findByType = jasmine.createSpy("Relationships.findByType");
         Relationships.prototype.add = jasmine.createSpy("Relationships.add");
 
-        ContentTypes = jasmine.createSpy("ContentTypes");
+        ContentTypes = jasmine.createSpy("ContentTypes").and.callFake(function() { Object.setPrototypeOf(this, ContentTypes.prototype); });
         ContentTypes.prototype.toString = () => "CONTENT TYPES";
         ContentTypes.prototype.findByPartName = jasmine.createSpy("ContentTypes.findByPartName");
         ContentTypes.prototype.add = jasmine.createSpy("ContentTypes.add");
 
-        CoreProperties = jasmine.createSpy("CoreProperties");
+        CoreProperties = jasmine.createSpy("CoreProperties").and.callFake(function() { Object.setPrototypeOf(this, CoreProperties.prototype); });
         CoreProperties.prototype.toString = () => "CORE PROPERTIES";
         CoreProperties.prototype.get = jasmine.createSpy("CoreProperties.get");
         CoreProperties.prototype.set = jasmine.createSpy("CoreProperties.set");
@@ -94,13 +94,13 @@ describe("Workbook", () => {
             ]
         };
 
-        XmlParser = jasmine.createSpy("XmlParser");
+        XmlParser = jasmine.createSpy("XmlParser").and.callFake(function() { Object.setPrototypeOf(this, XmlParser.prototype); });
         XmlParser.prototype.parseAsync = jasmine.createSpy("XmlParser.parseAsync").and.callFake(text => Promise.resolve(`JSON(${text})`));
 
-        XmlBuilder = jasmine.createSpy("XmlBuilder");
+        XmlBuilder = jasmine.createSpy("XmlBuilder").and.callFake(function() { Object.setPrototypeOf(this, XmlBuilder.prototype); });
         XmlBuilder.prototype.build = jasmine.createSpy("XmlBuilder.build").and.callFake(obj => `XML: ${obj && obj.toString()}`);
 
-        Encryptor = jasmine.createSpy("Encryptor");
+        Encryptor = jasmine.createSpy("Encryptor").and.callFake(function() { Object.setPrototypeOf(this, Encryptor.prototype); });
         Encryptor.prototype.encrypt = jasmine.createSpy("Encryptor.encrypt").and.callFake(input => `ENCRYPTED(${input})`);
         Encryptor.prototype.decryptAsync = jasmine.createSpy("Encryptor.decryptAsync").and.callFake(input => Promise.resolve(`DECRYPTED(${input})`));
 

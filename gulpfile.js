@@ -3,12 +3,9 @@
 /* eslint global-require: "off" */
 
 const gulp = require('gulp');
-const browserify = require('browserify');
-const source = require('vinyl-source-stream');
-const buffer = require('vinyl-buffer');
+const webpack = require('webpack-stream');
 const rename = require('gulp-rename');
-const uglifyjs = require('uglify-js');
-const uglifyComposer = require('gulp-uglify/composer');
+const terser = require('terser-webpack-plugin');
 const sourcemaps = require('gulp-sourcemaps');
 const eslint = require("gulp-eslint");
 const jsdoc2md = require("jsdoc-to-markdown");
@@ -19,7 +16,7 @@ const karma = require('karma');
 const Jasmine = require("jasmine");
 
 // Use the latest uglify.
-const uglify = uglifyComposer(uglifyjs, console);
+// const uglify = uglifyComposer(uglifyjs, console);
 
 const BROWSERIFY_STANDALONE_NAME = "XlsxPopulate";
 const BABEL_CONFIG = {
@@ -114,24 +111,86 @@ const runJasmine = (configPath, cb) => {
     jasmine.execute();
 };
 
-const runBrowserify = (ignores, bundle) => {
-    return browserify({
-        entries: PATHS.browserify.source,
-        debug: true,
-        standalone: BROWSERIFY_STANDALONE_NAME
-    })
-        .ignore(ignores)
-        .transform("babelify", BABEL_CONFIG)
-        .bundle()
-        .pipe(source(bundle))
-        .pipe(buffer())
-        .pipe(gulp.dest(PATHS.browserify.base))
-        .pipe(sourcemaps.init({ loadMaps: true }))
-        .pipe(uglify())
-        .pipe(rename({ extname: '.min.js' }))
-        .pipe(sourcemaps.write(PATHS.browserify.sourceMap))
+const runWebpack = (ignores, bundleName) => {
+    const plugins = [
+        new webpack.webpack.ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
+            process: 'process/browser',
+        })
+    ];
+
+    if (ignores.length > 0) {
+        plugins.push(new webpack.webpack.IgnorePlugin({
+            resourceRegExp: new RegExp(ignores.join('|').replace(/\./g, '\\.').replace(/\//g, '\\/'))
+        }));
+    }
+
+    const config = {
+        mode: 'production',
+        entry: PATHS.browserify.source,
+        output: {
+            filename: bundleName,
+            library: BROWSERIFY_STANDALONE_NAME,
+            libraryTarget: 'umd',
+            globalObject: 'this'
+        },
+        module: {
+            rules: [
+                {
+                    test: /\.js$/,
+                    use: {
+                        loader: 'babel-loader',
+                        options: BABEL_CONFIG
+                    }
+                }
+            ]
+        },
+        resolve: {
+            fallback: {
+                "crypto": require.resolve("crypto-browserify"),
+                "buffer": require.resolve("buffer/"),
+                "stream": require.resolve("stream-browserify"),
+                "vm": require.resolve("vm-browserify"),
+                "fs": false,
+                "path": false
+            }
+        },
+        plugins: plugins,
+        optimization: {
+            minimize: false
+        },
+        devtool: 'source-map'
+    };
+
+    // Stream for unminified
+    const unminified = gulp.src(PATHS.browserify.source)
+        .pipe(webpack(config))
+        .pipe(rename(bundleName))
+        .pipe(gulp.dest(PATHS.browserify.base));
+    
+    // Config for minified
+    const configMin = Object.assign({}, config, {
+        optimization: {
+            minimize: true,
+            minimizer: [new terser({
+                extractComments: false,
+            })],
+        },
+        output: {
+             filename: bundleName.replace('.js', '.min.js'),
+             library: BROWSERIFY_STANDALONE_NAME,
+             libraryTarget: 'umd',
+             globalObject: 'this'
+        }
+    });
+
+    return gulp.src(PATHS.browserify.source)
+        .pipe(webpack(configMin))
         .pipe(gulp.dest(PATHS.browserify.base));
 };
+
+const browserifyTask = () => runWebpack([], PATHS.browserify.bundle);
+const browserifyNoEncryption = () => runWebpack(PATHS.browserify.encryptionIgnores, PATHS.browserify.noEncryptionBundle);
 
 const blank = async () => {
     const data = await fs.readFileAsync(PATHS.blank.workbook, "base64");
@@ -155,13 +214,9 @@ const docs = () => {
         });
 };
 
-const browserFull = gulp.series(blank, function browserFull() {
-    return runBrowserify([], PATHS.browserify.bundle);
-});
+const browserFull = gulp.series(blank, browserifyTask);
 
-const browserNoEncryption = gulp.series(blank, function browserNoEncryption() {
-    return runBrowserify([PATHS.browserify.encryptionIgnores], PATHS.browserify.noEncryptionBundle);
-});
+const browserNoEncryption = gulp.series(blank, browserifyNoEncryption);
 
 const browser = gulp.series(browserFull, browserNoEncryption);
 
