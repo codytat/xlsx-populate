@@ -165,7 +165,6 @@ const runWebpack = (ignores, bundleName) => {
     // Stream for unminified
     const unminified = gulp.src(PATHS.browserify.source)
         .pipe(webpack(config))
-        .pipe(rename(bundleName))
         .pipe(gulp.dest(PATHS.browserify.base));
     
     // Config for minified
